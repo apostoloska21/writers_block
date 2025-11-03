@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<h1>Welcome to system for authentication</h1>
+<p>This is test page. Use manu for registering, loging</p>
+
+{% if current_user.is_authenticated %}
+    <p>You're logged in as:  <strong>{{ current_user.username }}</strong></p>
+    <a href="{{ url_for('profile') }}">View my profile</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+{% else %}
+    <a href="{{ url_for('login') }}">Login</a>
+    <a href="{{ url_for('register') }}">Register</a>
+{% endif %}
+{% endblock %}

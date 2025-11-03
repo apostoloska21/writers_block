@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Manage login info{% endblock %}
+
+{% block content %}
+<h1>manage your login information</h1>
+
+<div class="login-management">
+    <p>Here you can manage your login details</p>
+    <p><strong>username:</strong> {{ user.username }}</p>
+    <p><strong>email:</strong> {{ user.email }}</p>
+    <p><strong>status:</strong> {% if user.is_active %}active{% else %}not active{% endif %}</p>
+</div>
+
+<a href="{{ url_for('profile') }}">back to profile</a>
+{% endblock %}
