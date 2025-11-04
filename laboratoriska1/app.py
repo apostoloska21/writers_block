@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash
 from config import Config
 from models import db, User
 import re
@@ -10,7 +9,7 @@ app.config.from_object(Config)
 
 db.init_app(app)
 
-# upravuvanje na sesija dali user e najaven i sutodirect
+# Upravuvanje na sesija dali user e najaven
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -23,7 +22,6 @@ def load_user(user_id):
 
 
 def validate_email(email):
-    # regex
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
@@ -40,10 +38,9 @@ def validate_password(password):
     return True, "success"
 
 
-# xss za da se spreci cross side scripting napad, da ne moze da se vmetni JS kod vo web stranata preku input pole
+# XSS zashtita
 def sanitize_input(user_input):
     return user_input.strip().replace('<', '&lt;').replace('>', '&gt;')
-
 
 
 @app.route('/')
@@ -66,12 +63,14 @@ def register():
             flash("not valid email", 'failed registering')
             return redirect(url_for('register'))
         if password != password_confirm:
-            flash("not a valid password", 'failed registering')
+            flash("passwords do not match", 'failed registering')
             return redirect(url_for('register'))
+
         is_valid, message = validate_password(password)
         if not is_valid:
             flash(message, 'not valid password')
             return redirect(url_for('register'))
+
         if User.query.filter_by(username=username).first():
             flash('username already exists', 'failed registering')
             return redirect(url_for('register'))
@@ -134,6 +133,6 @@ def manage_login_info():
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #     db.create_all()
     app.run(debug=True, ssl_context='adhoc')
