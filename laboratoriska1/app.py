@@ -27,8 +27,8 @@ def validate_email(email):
 
 
 def validate_password(password):
-    if len(password) < 5:
-        return False, "password too short, must be more than 5 characters"
+    if len(password) < 8:
+        return False, "password too short, must be more than 8 characters"
     if not any(c.isupper() for c in password):
         return False, "password must contain at least one upper letter"
     if not any(c.islower() for c in password):
