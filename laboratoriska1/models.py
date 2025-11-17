@@ -5,7 +5,7 @@ import hashlib
 import base64
 import os
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
 
@@ -35,14 +35,14 @@ class User(UserMixin, db.Model):
         return self.password_hash == hashlib.sha256(salted_password).hexdigest()
 
     def generate_verification_code(self):
-        """Генерирај 6-дигитен код"""
+        # generiranje na 6 biten kod
         code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
         self.email_verification_code = code
         self.verification_code_expiry = datetime.now() + timedelta(minutes=10)
         return code
 
     def verify_code(self, code):
-        """Провери дали кодот е валиден"""
+        # proverka dali kodot e validen
         if not self.email_verification_code:
             return False
 

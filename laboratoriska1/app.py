@@ -11,7 +11,7 @@ app.config.from_object(Config)
 db.init_app(app)
 mail = Mail(app)
 
-# Login Manager - управување со сесии
+# Login Manager - upravuvanje so sesii
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -41,7 +41,7 @@ def validate_password(password):
 
 
 def sanitize_input(user_input):
-    """XSS """
+    # XSS
     return user_input.strip().replace('<', '&lt;').replace('>', '&gt;')
 
 
@@ -54,8 +54,6 @@ def send_verification_email(user, code):
 Your verification code is: {code}
 
 This code is valid for 10 minutes.
-
-If you did not register, please ignore this email.
 '''
     )
     mail.send(msg)
@@ -122,7 +120,7 @@ def register():
 
 @app.route('/verify-email/<email>', methods=['GET', 'POST'])
 def verify_email(email):
-    """Верификација на email при регистрација (Fase 2)"""
+    # verifikacija na meil pri registriranje
     user = User.query.filter_by(email=email).first()
 
     if not user:
@@ -151,7 +149,7 @@ def verify_email(email):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Пријава (Fase 1 - проверка на username и лозинка)"""
+    # proverka na username i lozinka
     if request.method == 'POST':
         username = sanitize_input(request.form.get('username', ''))
         password = request.form.get('password', '')
@@ -170,9 +168,10 @@ def login():
             flash('Email not verified. Check your email for verification code.', 'warning')
             return redirect(url_for('verify_email', email=user.email))
 
-        # Генерирај верификаторски код за 2FA login
+        # generira 2fa verifikaciski kod
         code = user.generate_verification_code()
-        db.session.commit()  # ВАЖНО: Сохрани го кодот во база!
+        # se socuvuva vo baza
+        db.session.commit()
 
         try:
             send_verification_email(user, code)
@@ -187,7 +186,7 @@ def login():
 
 @app.route('/verify-login/<user_id>', methods=['GET', 'POST'])
 def verify_login_code(user_id):
-    """Верификација на код при login (Fase 2)"""
+    # verifikacija pri login
     user = User.query.get(user_id)
 
     if not user:
@@ -198,7 +197,7 @@ def verify_login_code(user_id):
         code = request.form.get('code', '').strip()
 
         if user.verify_code(code):
-            # Верификациониран - логирај го
+            # ako korisnikot e verifikuvan togas da se logira
             login_user(user, remember=True)
             flash(f'Welcome, {user.username}!', 'success')
             return redirect(url_for('profile'))
@@ -212,21 +211,19 @@ def verify_login_code(user_id):
 @app.route('/profile')
 @login_required
 def profile():
-    """Профилна страна - заштитена"""
+
     return render_template('profile.html', user=current_user)
 
 
 @app.route('/manage-login-info')
 @login_required
 def manage_login_info():
-    """Управување со login информации - заштитена"""
     return render_template('manage_login_info.html', user=current_user)
 
 
 @app.route('/logout')
 @login_required
 def logout():
-    """Одјава"""
     logout_user()
     flash('You have been logged out', 'info')
     return redirect(url_for('index'))
