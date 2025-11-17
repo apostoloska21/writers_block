@@ -3,25 +3,45 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<h1>register new user</h1>
 
-<form method="POST" action="{{ url_for('register') }}">
-    <label for="username">username:</label>
-<!--      <script>alert('XSS test')</script>-->
-    <input type="text" id="username" name="username" required>
+<div class="container">
+    <h2>Register</h2>
 
-    <label for="email">email:</label>
-    <input type="email" id="email" name="email" required>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-    <label for="password">password:</label>
-    <input type="password" id="password" name="password" required>
-    <small>minimum 8 character, upper character, lower character, number</small>
+    <form method="POST" action="{{ url_for('register') }}">
 
-    <label for="password_confirm">confirm password:</label>
-    <input type="password" id="password_confirm" name="password_confirm" required>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
 
-    <button type="submit">Resister</button>
-</form>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
 
-<p>already have account? <a href="{{ url_for('login') }}">Login</a></p>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <small>Must contain at least 8 characters, 1 big, 1 small character and number</small>
+        </div>
+
+        <div class="form-group">
+            <label for="password_confirm">Confirm Password:</label>
+            <input type="password" id="password_confirm" name="password_confirm" required>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p>Already have account? <a href="{{ url_for('login') }}">Login</a></p>
+</div>
+
 {% endblock %}

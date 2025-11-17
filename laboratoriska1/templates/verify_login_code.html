@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Login Code{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Email Verification for Login</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <p>The code is sent to: <strong>{{ email }}</strong></p>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="code">Enter verification code:</label>
+            <input type="text" id="code" name="code" placeholder="Enter 6-digit code" maxlength="6" required>
+        </div>
+        <button type="submit">Verify</button>
+    </form>
+</div>
+{% endblock %}

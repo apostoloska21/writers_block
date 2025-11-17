@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email verification</title>
+</head>
+<body>
+    <h2>Email verification</h2>
+    <p>The code is sent to: {{ email }}</p>
+
+    <form method="POST">
+        <input type="text" name="code" placeholder="Enter 6 digit code" required>
+        <button type="submit">Verify</button>
+    </form>
+</body>
+</html>
