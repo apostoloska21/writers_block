@@ -26,10 +26,14 @@ class User(UserMixin, db.Model):
     verification_code_expiry = db.Column(db.DateTime)
 
     def set_password(self, password):
+        # salt e za da se zastitat lozinkite pred da se hasiraat i da nema ist hash ponataka
         self.salt = base64.b16encode(os.urandom(16)).decode('utf-8')
         salted_password = (self.salt + password).encode('utf-8')
+        # so salt, ako 2 + users imaat ista lozinka, nema da imaat ist hash
         self.password_hash = hashlib.sha256(salted_password).hexdigest()
 
+    # pri login, go zemam istiot salt, go spojuvam so novata lozinka hashiram i se sporeduva so zavucanieot salt,
+    # ako se sovpadnat znaci userot postoi, login, ako ne greska
     def check_password(self, password):
         salted_password = (self.salt + password).encode('utf-8')
         return self.password_hash == hashlib.sha256(salted_password).hexdigest()
