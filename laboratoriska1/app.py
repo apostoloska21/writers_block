@@ -2,7 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from config import Config
-from models import db, User
+from models import db, User, Role, UserRole
+from functools import wraps
+from flask import abort
 import re
 
 app = Flask(__name__)
@@ -59,6 +61,18 @@ This code is valid for 10 minutes.
     mail.send(msg)
 
 
+# funkcija za ogranicuvanje na pristap na ruti spored uloga
+def role_required(role_name):
+    def decorator(f):
+        @wraps(f)
+        @login_required
+        def wrapper(*args, **kwargs):
+            if not current_user.has_role(role_name):
+                abort(403)
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -106,6 +120,10 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        # BOOTSTRAP: prviot user neka e ORG_ADMIN (za da moze da vlezes vo admin panel)
+        if User.query.count() == 1:
+            new_user.add_role('ORG_ADMIN')
+
         try:
             send_verification_email(new_user, code)
             flash('Registration successful! Check your email for verification code.', 'success')
@@ -116,6 +134,7 @@ def register():
         return redirect(url_for('verify_email', email=email))
 
     return render_template('register.html')
+
 
 
 @app.route('/verify-email/<email>', methods=['GET', 'POST'])
@@ -149,7 +168,6 @@ def verify_email(email):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # proverka na username i lozinka
     if request.method == 'POST':
         username = sanitize_input(request.form.get('username', ''))
         password = request.form.get('password', '')
@@ -168,9 +186,7 @@ def login():
             flash('Email not verified. Check your email for verification code.', 'warning')
             return redirect(url_for('verify_email', email=user.email))
 
-        # generira 2fa verifikaciski kod
         code = user.generate_verification_code()
-        # se socuvuva vo baza
         db.session.commit()
 
         try:
@@ -182,6 +198,7 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
+
 
 
 @app.route('/verify-login/<user_id>', methods=['GET', 'POST'])
@@ -220,6 +237,52 @@ def profile():
 def manage_login_info():
     return render_template('manage_login_info.html', user=current_user)
 
+# ADMIN: list users + roles
+@app.route('/admin/users')
+@role_required('ORG_ADMIN')
+def admin_users():
+    users = User.query.all()
+    return render_template('admin_users.html', users=users)
+
+
+# ADMIN: grant org role (permanent)
+@app.route('/admin/grant-org-employee/<user_id>')
+@role_required('ORG_ADMIN')
+def grant_org_employee(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found', 'danger')
+        return redirect(url_for('admin_users'))
+    user.add_role('EMPLOYEE')
+    flash('EMPLOYEE role granted.', 'success')
+    return redirect(url_for('admin_users'))
+
+
+# ADMIN: grant resource role JIT (temporary)
+@app.route('/admin/grant-db-writer-jit/<user_id>')
+@role_required('ORG_ADMIN')
+def grant_db_writer_jit(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found', 'danger')
+        return redirect(url_for('admin_users'))
+    user.add_role('DB_WRITER', hours=1)
+    flash('Temporary DB_WRITER (1 hour) granted.', 'success')
+    return redirect(url_for('admin_users'))
+
+
+# Protected resources (examples)
+@app.route('/org/dashboard')
+@role_required('EMPLOYEE')
+def org_dashboard():
+    return render_template('org_dashboard.html')
+
+
+@app.route('/db/write')
+@role_required('DB_WRITER')
+def db_write_action():
+    return "DB WRITE: samo so DB_WRITER uloga."
+
 
 @app.route('/logout')
 @login_required
@@ -232,4 +295,17 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+
+        # Seed roles (org + resource)
+        base_roles = [
+            ('ORG_ADMIN', 'org'),
+            ('EMPLOYEE', 'org'),
+            ('DB_READER', 'resource'),
+            ('DB_WRITER', 'resource'),
+        ]
+        for name, scope in base_roles:
+            if not Role.query.filter_by(name=name).first():
+                db.session.add(Role(name=name, scope=scope))
+        db.session.commit()
+
     app.run(debug=True, ssl_context='adhoc')

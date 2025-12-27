@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Admin - Users{% endblock %}
+
+{% block content %}
+<h1>Admin: users and roles</h1>
+
+<table border="1" cellpadding="6">
+  <tr>
+    <th>Username</th>
+    <th>Email</th>
+    <th>Roles</th>
+    <th>Actions</th>
+  </tr>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.username }}</td>
+    <td>{{ u.email }}</td>
+    <td>
+      {% for ur in u.user_roles %}
+        {{ ur.role.name }}{% if ur.expires_at %} (until {{ ur.expires_at }}){% endif %}<br>
+      {% else %}
+        none
+      {% endfor %}
+    </td>
+    <td>
+      <a href="{{ url_for('grant_org_employee', user_id=u.id) }}">Grant EMPLOYEE</a><br>
+      <a href="{{ url_for('grant_db_writer_jit', user_id=u.id) }}">Grant DB_WRITER 1h</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

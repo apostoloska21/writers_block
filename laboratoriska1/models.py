@@ -58,5 +58,51 @@ class User(UserMixin, db.Model):
 
         return True
 
+    # RBAC check (includes JIT expiration)
+    def has_role(self, role_name):
+        now = datetime.now()
+        for ur in self.user_roles:
+            if ur.role.name == role_name and (ur.expires_at is None or ur.expires_at > now):
+                return True
+        return False
+
+    # Assign role (hours=None => permanent; hours=1 => JIT 1h)
+    def add_role(self, role_name, hours=None):
+        role = Role.query.filter_by(name=role_name).first()
+        if not role:
+            return False
+
+        expires = None
+        if hours is not None:
+            expires = datetime.now() + timedelta(hours=hours)
+
+        ur = UserRole(user=self, role=role, expires_at=expires)
+        db.session.add(ur)
+        db.session.commit()
+        return True
+
     def get_id(self):
         return self.id
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    # ORG_ADMIN, EMPLOYEE, DB_READER...
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    # 'org' ili 'resource'
+    scope = db.Column(db.String(20), nullable=False)
+
+
+class UserRole(db.Model):
+    __tablename__ = 'user_roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('app_users.id'), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    # None = permanent
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship('User', backref=db.backref('user_roles', lazy='dynamic'))
+    role = db.relationship('Role')

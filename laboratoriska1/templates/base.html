@@ -67,15 +67,18 @@
 </head>
 <body>
     <nav>
-        {% if current_user.is_authenticated %}
-            <span>Logged in as: <strong>{{ current_user.username }}</strong></span> |
-            <a href="{{ url_for('profile') }}">profile</a> |
-            <a href="{{ url_for('manage_login_info') }}">manage</a> |
-            <a href="{{ url_for('logout') }}">logout</a>
-        {% else %}
-            <a href="{{ url_for('login') }}">login</a> |
-            <a href="{{ url_for('register') }}">register</a>
+      {% if current_user.is_authenticated %}
+        <span>Logged in as <strong>{{ current_user.username }}</strong></span>
+        <a href="{{ url_for('profile') }}">profile</a>
+        <a href="{{ url_for('manage_login_info') }}">manage</a>
+        {% if current_user.has_role('ORG_ADMIN') %}
+          <a href="{{ url_for('admin_users') }}">admin</a>
         {% endif %}
+        <a href="{{ url_for('logout') }}">logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">login</a>
+        <a href="{{ url_for('register') }}">register</a>
+      {% endif %}
     </nav>
 
     <div class="container">
