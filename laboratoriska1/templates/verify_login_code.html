@@ -1,27 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Verify Login Code{% endblock %}
+{% block title %}Verify Login Code - Writer's Block{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Email Verification for Login</h2>
+<h1>Email Verification for Login</h1>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+<p style="margin-bottom: 1.5rem; font-size: 1.05rem;">The verification code has been sent to: <strong style="color: #1e3a5f;">{{ email }}</strong></p>
 
-    <p>The code is sent to: <strong>{{ email }}</strong></p>
-
-    <form method="POST">
-        <div class="form-group">
-            <label for="code">Enter verification code:</label>
-            <input type="text" id="code" name="code" placeholder="Enter 6-digit code" maxlength="6" required>
-        </div>
-        <button type="submit">Verify</button>
-    </form>
-</div>
+<form method="POST">
+    <div class="form-group">
+        <label for="code">Enter Verification Code:</label>
+        <input type="text" id="code" name="code" placeholder="Enter 6-digit code" maxlength="6" required style="text-align: center; letter-spacing: 0.5rem; font-size: 1.25rem; font-weight: 600;">
+    </div>
+    <button type="submit" class="btn-success">Verify</button>
+</form>
 {% endblock %}

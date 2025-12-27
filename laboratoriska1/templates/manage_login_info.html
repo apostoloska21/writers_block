@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Manage login info{% endblock %}
+{% block title %}Manage Login Info - Writer's Block{% endblock %}
 
 {% block content %}
-<h1>manage your login information</h1>
+<h1>Manage Your Login Information</h1>
 
-<div class="login-management">
-    <p>Here you can manage your login details</p>
-    <p><strong>username:</strong> {{ user.username }}</p>
-    <p><strong>email:</strong> {{ user.email }}</p>
+<div class="profile-info">
+    <p style="margin-bottom: 1rem;">Here you can manage your login details:</p>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
 </div>
 
-<a href="{{ url_for('profile') }}">back to profile</a>
+<div style="margin-top: 1.5rem;">
+    <a href="{{ url_for('profile') }}" class="btn" style="display: inline-block; text-decoration: none;">Back to Profile</a>
+</div>
 {% endblock %}

@@ -1,20 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Login - Writer's Block{% endblock %}
 
 {% block content %}
 <h1>Login</h1>
 
 <form method="POST" action="{{ url_for('login') }}">
-    <label for="username">username:</label>
-<!--      <script>alert('XSS test')</script>-->
-    <input type="text" id="username" name="username" required>
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+    </div>
     
-    <label for="password">password:</label>
-    <input type="password" id="password" name="password" required>
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
     
-    <button type="submit">login</button>
+    <button type="submit">Login</button>
 </form>
 
-<p>Don't have account? <a href="{{ url_for('register') }}">Register</a></p>
+<p style="margin-top: 1.5rem; text-align: center;">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
 {% endblock %}

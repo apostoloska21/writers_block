@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}My Profile{% endblock %}
+{% block title %}My Profile - Writer's Block{% endblock %}
 
 {% block content %}
 <h1>Welcome, {{ current_user.username }}!</h1>
 
 <div class="profile-info">
-    <p><strong>username:</strong> {{ current_user.username }}</p>
-    <p><strong>email:</strong> {{ current_user.email }}</p>
-    <p><strong>date of registration:</strong> {{ current_user.date_created }}</p>
+    <p><strong>Username:</strong> {{ current_user.username }}</p>
+    <p><strong>Email:</strong> {{ current_user.email }}</p>
+    <p><strong>Date of Registration:</strong> {{ current_user.date_created }}</p>
 </div>
 
-<a href="{{ url_for('logout') }}">logout</a>
+<div style="margin-top: 1.5rem;">
+    <a href="{{ url_for('logout') }}" class="btn" style="display: inline-block; text-decoration: none; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); box-shadow: 0 4px 6px rgba(220, 53, 69, 0.3);">Logout</a>
+</div>
 {% endblock %}

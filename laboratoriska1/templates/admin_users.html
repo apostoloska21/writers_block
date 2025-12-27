@@ -1,32 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Admin - Users{% endblock %}
+{% block title %}Admin - Users - Writer's Block{% endblock %}
 
 {% block content %}
-<h1>Admin: users and roles</h1>
+<h1>Admin: Users and Roles</h1>
 
-<table border="1" cellpadding="6">
-  <tr>
-    <th>Username</th>
-    <th>Email</th>
-    <th>Roles</th>
-    <th>Actions</th>
-  </tr>
-  {% for u in users %}
-  <tr>
-    <td>{{ u.username }}</td>
-    <td>{{ u.email }}</td>
-    <td>
-      {% for ur in u.user_roles %}
-        {{ ur.role.name }}{% if ur.expires_at %} (until {{ ur.expires_at }}){% endif %}<br>
-      {% else %}
-        none
-      {% endfor %}
-    </td>
-    <td>
-      <a href="{{ url_for('grant_org_employee', user_id=u.id) }}">Grant EMPLOYEE</a><br>
-      <a href="{{ url_for('grant_db_writer_jit', user_id=u.id) }}">Grant DB_WRITER 1h</a>
-    </td>
-  </tr>
-  {% endfor %}
+<table>
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Roles</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td><strong>{{ u.username }}</strong></td>
+      <td>{{ u.email }}</td>
+      <td>
+        {% for ur in u.user_roles %}
+          <span style="display: inline-block; background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 6px; margin: 0.25rem 0.25rem 0.25rem 0; font-size: 0.875rem; box-shadow: 0 2px 4px rgba(30, 58, 95, 0.3);">
+            {{ ur.role.name }}{% if ur.expires_at %} (until {{ ur.expires_at }}){% endif %}
+          </span>
+        {% else %}
+          <span style="color: #999;">none</span>
+        {% endfor %}
+      </td>
+      <td>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <a href="{{ url_for('grant_org_employee', user_id=u.id) }}" style="display: inline-block; padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%); color: white; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(255, 140, 66, 0.4);">Grant EMPLOYEE</a>
+          <a href="{{ url_for('grant_db_writer_jit', user_id=u.id) }}" style="display: inline-block; padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); color: white; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(30, 58, 95, 0.4);">Grant DB_WRITER 1h</a>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
 {% endblock %}

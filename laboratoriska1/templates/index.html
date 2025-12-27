@@ -1,17 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}Welcome - Writer's Block{% endblock %}
 
 {% block content %}
-<h1>Welcome to system for authentication</h1>
-<p>This is test page. Use manu for registering, loging</p>
+<h1>Welcome to Writer's Block</h1>
+<p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem;">Your secure authentication system. Use the menu above for registering or logging in.</p>
 
 {% if current_user.is_authenticated %}
-    <p>You're logged in as:  <strong>{{ current_user.username }}</strong></p>
-    <a href="{{ url_for('profile') }}">View my profile</a>
-    <a href="{{ url_for('logout') }}">Logout</a>
+    <div class="profile-info">
+        <p>You're logged in as: <strong>{{ current_user.username }}</strong></p>
+    </div>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+        <a href="{{ url_for('profile') }}" class="btn" style="display: inline-block; text-decoration: none;">View My Profile</a>
+        <a href="{{ url_for('logout') }}" class="btn" style="display: inline-block; text-decoration: none; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); box-shadow: 0 4px 6px rgba(220, 53, 69, 0.3);">Logout</a>
+    </div>
 {% else %}
-    <a href="{{ url_for('login') }}">Login</a>
-    <a href="{{ url_for('register') }}">Register</a>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+        <a href="{{ url_for('login') }}" class="btn" style="display: inline-block; text-decoration: none;">Login</a>
+        <a href="{{ url_for('register') }}" class="btn btn-success" style="display: inline-block; text-decoration: none;">Register</a>
+    </div>
 {% endif %}
 {% endblock %}
