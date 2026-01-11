@@ -103,6 +103,8 @@ class UserRole(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
     # None = permanent
     expires_at = db.Column(db.DateTime, nullable=True)
+    # Track if expiration notification has been sent
+    expiration_notification_sent = db.Column(db.Boolean, default=False, nullable=False)
 
     user = db.relationship('User', backref=db.backref('user_roles', lazy='dynamic'))
     role = db.relationship('Role')

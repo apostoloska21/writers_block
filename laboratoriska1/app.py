@@ -5,6 +5,7 @@ from config import Config
 from models import db, User, Role, UserRole
 from functools import wraps
 from flask import abort
+from datetime import datetime, timedelta
 import re
 
 app = Flask(__name__)
@@ -59,6 +60,114 @@ This code is valid for 10 minutes.
 '''
     )
     mail.send(msg)
+
+
+def send_expiration_notification(user, role_name, expired_at):
+    """Send notification to user about expired role"""
+    msg = Message(
+        subject="Role Permission Expired - Writer's Block",
+        recipients=[user.email],
+        body=f'''Hello {user.username},
+
+Your temporary {role_name} permission has expired.
+
+Expiration time: {expired_at.strftime('%Y-%m-%d %H:%M:%S')}
+
+You no longer have access to resources that require this role. If you need this permission again, please contact your administrator.
+
+Best regards,
+Writer's Block Team
+'''
+    )
+    mail.send(msg)
+
+
+def send_admin_expiration_notification(admin_user, expired_user, role_name, expired_at):
+    """Send notification to admin about expired role"""
+    msg = Message(
+        subject="Temporary Role Expired - Writer's Block",
+        recipients=[admin_user.email],
+        body=f'''Hello {admin_user.username},
+
+A temporary role you granted has expired.
+
+User: {expired_user.username} ({expired_user.email})
+Role: {role_name}
+Expiration time: {expired_at.strftime('%Y-%m-%d %H:%M:%S')}
+
+The user no longer has access to resources that require this role.
+
+Best regards,
+Writer's Block Team
+'''
+    )
+    mail.send(msg)
+
+
+def check_and_notify_expired_roles():
+    """Check for expired DB_WRITER roles and send notifications"""
+    now = datetime.now()
+    db_writer_role = Role.query.filter_by(name='DB_WRITER').first()
+    
+    if not db_writer_role:
+        return
+    
+    # Find expired DB_WRITER roles that haven't been notified
+    expired_roles = UserRole.query.filter(
+        UserRole.role_id == db_writer_role.id,
+        UserRole.expires_at.isnot(None),
+        UserRole.expires_at <= now,
+        UserRole.expiration_notification_sent == False
+    ).all()
+    
+    if not expired_roles:
+        return
+    
+    # Get all admins
+    org_admin_role = Role.query.filter_by(name='ORG_ADMIN').first()
+    admins = []
+    if org_admin_role:
+        admin_user_roles = UserRole.query.filter_by(role_id=org_admin_role.id).all()
+        admins = [ur.user for ur in admin_user_roles if ur.expires_at is None or ur.expires_at > now]
+    
+    for expired_role in expired_roles:
+        user = expired_role.user
+        
+        # Send notification to the user (writer)
+        try:
+            send_expiration_notification(user, 'DB_WRITER', expired_role.expires_at)
+        except Exception as e:
+            print(f"Error sending expiration notification to {user.email}: {str(e)}")
+        
+        # Send notification to all admins
+        for admin in admins:
+            try:
+                send_admin_expiration_notification(admin, user, 'DB_WRITER', expired_role.expires_at)
+            except Exception as e:
+                print(f"Error sending admin notification to {admin.email}: {str(e)}")
+        
+        # Mark as notified
+        expired_role.expiration_notification_sent = True
+    
+    db.session.commit()
+
+
+# Last time we checked for expired roles (throttle to avoid checking too frequently)
+last_expiration_check = {'time': datetime.now()}
+
+@app.before_request
+def check_expired_roles_periodically():
+    """Check for expired roles periodically (every 60 seconds)"""
+    global last_expiration_check
+    now = datetime.now()
+    
+    # Check every 60 seconds
+    if (now - last_expiration_check['time']).total_seconds() >= 60:
+        try:
+            check_and_notify_expired_roles()
+            last_expiration_check['time'] = now
+        except Exception as e:
+            print(f"Error checking expired roles: {str(e)}")
 
 
 # funkcija za ogranicuvanje na pristap na ruti spored uloga
@@ -308,4 +417,4 @@ if __name__ == '__main__':
                 db.session.add(Role(name=name, scope=scope))
         db.session.commit()
 
-    app.run(debug=True, ssl_context='adhoc')
+    app.run(debug=True)
